@@ -10,33 +10,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - uses: actions/cache@v3
-        with:
-          path: |
-            venv
-            ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: pip
 
       - name: Install dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
           pip install -r requirements.txt
-          playwright install
+          playwright install --with-deps
 
       - name: Run tests
-        run: |
-          source venv/bin/activate
-          pytest tests/unit/ --cov=src --junitxml=test-results/junit.xml
-          pytest tests/integration/
-          pytest tests/e2e/
+        run: pytest --junitxml=test-results/junit.xml
 
   security:
     needs: test
@@ -77,6 +64,6 @@ jobs:
           tags: |
             aliyahb4/601_module8:latest
             aliyahb4/601_module8:${{ github.sha }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           cache-from: type=registry,ref=aliyahb4/601_module8:cache
           cache-to: type=inline,mode=max
